@@ -41,3 +41,25 @@ class Session(models.Model):
 
     def __unicode__(self):
         return self.user_id
+
+
+
+class Activity(models.Model):
+    session = models.ForeignKey(Session, verbose_name=_('Session'), on_delete=models.SET_NULL, null=True)
+    channel_id = models.CharField(verbose_name=_('Channel Id'), max_length=200, blank=True, null=True)
+    content_id = models.CharField(verbose_name=_('Content Id'), max_length=200, blank=True, null=True)
+    content_type_id = models.CharField(verbose_name=_('Content Type Id'), max_length=200, blank=True, null=True)
+    service_id = models.CharField(verbose_name=_('Service Id'), max_length=200, blank=True, null=True)
+    action_id = models.CharField(verbose_name=_('Action Id'), max_length=200, blank=True, null=True)
+    time_code = models.CharField(verbose_name=_('Time Code'), max_length=200, blank=True, null=True)
+
+
+    class Meta:
+        verbose_name = _('Activity')
+        verbose_name_plural = _('Activities')
+
+    def __str__(self):
+        return self.channel_id
+
+    def __unicode__(self):
+        return self.channel_id

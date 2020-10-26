@@ -5,7 +5,8 @@ from testapp.models import System, Session
 from rest_framework import viewsets, mixins
 from rest_framework.response import Response
 from testapp.serializers import SessionSerializer
-
+from testapp import serializers
+from . import models
 
 class SessionViewSets(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.RetrieveModelMixin,
                       mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -64,3 +65,8 @@ class SessionViewSets(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.R
         # Update session
         request.data['End_time'] = timezone.now()
         return super(SessionViewSets, self).update(request, *args, **kwargs)
+
+class ActivityViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin,
+                      mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = models.Activity.objects.all()
+    serializer_class = serializers.ActivitySerializer

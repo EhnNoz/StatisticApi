@@ -5,6 +5,7 @@ from django.urls import path, include
 
 router = routers.DefaultRouter()
 router.register('session', views.SessionViewSets, basename='sessions')
+router.register(r'activity', views.ActivityViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
