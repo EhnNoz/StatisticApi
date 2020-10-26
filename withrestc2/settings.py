@@ -25,7 +25,7 @@ SECRET_KEY = '=44eyl-w+db@((-+y-xs-+3!#8x2tjt5wyf#o#$0i1phq3m!jx'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.115.153','127.0.0.1']
+ALLOWED_HOSTS = ['192.168.115.153','127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -39,11 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'testapp',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -122,3 +124,23 @@ USE_TZ = True
 STATIC_URL = '/static/'
 SESSION_SAVE_EVERY_REQUEST = True
 
+# CORS
+CORS_ORIGIN_ALLOW_ALL = False
+
+CORS_ORIGIN_WHITELIST = ('http://localhost:8002',)
+
+CORS_ALLOW_METHODS = (
+    'GET',
+    'PATCH',
+    'POST',
+)
+
+CORS_ALLOW_HEADERS = (
+    'Authorization',
+    'User-Agent',
+    'Referer',
+    'Content-Type',
+)
+
+
+SESSION_TIMEOUT = 15

@@ -1,90 +1,66 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
+import datetime
+from django.conf import settings
+from django.utils import timezone
+from testapp.models import System, Session
+from rest_framework import viewsets, mixins
 from rest_framework.response import Response
-#from testapp.serializers import NameSerializer
 from testapp.serializers import SessionSerializer
-#import time
 
-#import pika
-#import json
-#from testapp.models import CR_TABLE
-from testapp.models import Session
-from testapp.models import System
 
-#credentials = pika.PlainCredentials(username='admin', password='admin')
-#connection = pika.BlockingConnection(pika.ConnectionParameters(host='192.168.143.17',port=5672,credentials=credentials))
+class SessionViewSets(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.RetrieveModelMixin,
+                      mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = SessionSerializer
+    queryset = Session.objects.all()
 
-class TestAPIView(APIView):
+    # Authenticate vs Token
+    def get_system(self, request):
+        # Authorization process: Check if token is valid
+        token = request.headers['authorization'].split(' ')[1]
+        url = request.META['HTTP_ORIGIN']
+        system = System.objects.filter(token=token, url__contains=url)
+        if system.exists():
+            return system[0]
+        else:
+            return None
 
-    
-    
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
+        system = self.get_system(request)
+        if not system:
+            return Response(status=403)
 
+        # Process session
         serializer = SessionSerializer(data=request.data)
         if serializer.is_valid():
-            
-            system = serializer.data.get('system')
             user_id = serializer.data.get('user_id')
             ip = serializer.data.get('ip')
             user_agent = serializer.data.get('user_agent')
             referer = serializer.data.get('referer')
-            a=[]
-            a=referer.split("?token=")
-            eurl=a[0]
-            etoken=a[1]
-            print(a)
-            start = time.time()
-            print(start)
             xReferer = serializer.data.get('xReferer')
-            End_time = serializer.data.get('End_time')
-#            time = serializer.data.get('created_at')
-#            a=Session.referer
-#            print(a)
-#            url = serializer2.data('url')
-            if System.objects.filter(token=etoken).filter(url__contains=eurl).exists():
-                Session.objects.create(system=system,user_id=user_id,ip=ip,user_agent=user_agent,referer=referer,xReferer=xReferer)
-                return Response(status=200)
 
-            else:
+            # Check if session is already opened
+            now = timezone.now()
+            before = now - datetime.timedelta(minutes=settings.SESSION_TIMEOUT)
+            session = Session.objects.filter(system=system, user_id=user_id, start_time__range=[before, now]).exclude(
+                End_time=None)
+            if session.exists():
+                session = session[0]
+                session.user_agent = user_agent
+                session.referer = referer
+                session.xReferer = xReferer
+                session.save()
+                return Response(SessionSerializer(session).data, status=200)
 
-                return Response(status=403)
-#2020-10-21 10:26:26.303984        
-    
-#    def patch(self, request, *args, **kwargs):
-#        
-#         
-#        serializer = SessionSerializer(data=request.data)
-#        if serializer.is_valid():
-#            system = serializer.data.get('system')
-#            user_id = serializer.data.get('user_id')
-#            ip = serializer.data.get('ip')
-#            user_agent = serializer.data.get('user_agent')
-#            referer = serializer.data.get('referer')
-#            a=[]
-#            a=referer.split("?token=")
-#            eurl=a[0]
-#            etoken=a[1]
-#            print(a)
-#            start = time.time()
-#            print(start)
-#            xReferer = serializer.data.get('xReferer')
-#            End_time = serializer.data.get('End_time')
-##            xReferer = serializer.data.get('xReferer')
-#            if Session.objects.filter(user_id=user_id):
-#                 Session.objects.filter(user_id=user_id).update(system=system,user_id=user_id,ip=ip,user_agent=user_agent,referer=referer,xReferer='201')
-#                 return Response(status=201)
+            session = Session.objects.create(system=system, user_id=user_id, ip=ip, user_agent=user_agent,
+                                             referer=referer, xReferer=xReferer)
+            return Response(SessionSerializer(session).data, status=201)
+        else:
+            return Response(serializer._errors, status=400)
 
-#            
+    def update(self, request, *args, **kwargs):
+        system = self.get_system(request)
+        if not system:
+            return Response(status=403)
 
-
-
-
-    
-        
-
-
-
-
-
-  
-
+        # Update session
+        request.data['End_time'] = timezone.now()
+        return super(SessionViewSets, self).update(request, *args, **kwargs)

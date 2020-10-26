@@ -3,7 +3,6 @@ from django.utils.translation import ugettext_lazy as _
 
 
 
-
 class System(models.Model):
     name = models.CharField(verbose_name=_('Name'), max_length=200, blank=False, null=False, unique=True)
     url = models.CharField(verbose_name=_('Url'), max_length=200, blank=False, null=False, unique=True)
@@ -25,11 +24,11 @@ class System(models.Model):
     
 class Session(models.Model):
     system = models.ForeignKey(System, verbose_name=_('System'), on_delete=models.SET_NULL, null=True)
-    user_id = models.CharField(verbose_name=_('User Id'), max_length=200, blank=True, null=True, unique=True)
-    ip = models.CharField(verbose_name=_('IP'), max_length=200, blank=True, null=True, unique=False)
-    user_agent = models.CharField(verbose_name=_('User Agent'), max_length=200, blank=True, null=True, unique=False)
-    referer = models.CharField(verbose_name=_('Referer'), max_length=200, blank=True, null=True, unique=False)
-    xReferer = models.CharField(verbose_name=_('XReferer'), max_length=200, blank=True, null=True, unique=False)
+    user_id = models.CharField(verbose_name=_('User Id'), max_length=200, blank=True, null=True)
+    ip = models.CharField(verbose_name=_('IP'), max_length=200, blank=True, null=True)
+    user_agent = models.CharField(verbose_name=_('User Agent'), max_length=200, blank=True, null=True)
+    referer = models.CharField(verbose_name=_('Referer'), max_length=200, blank=True, null=True)
+    xReferer = models.CharField(verbose_name=_('XReferer'), max_length=200, blank=True, null=True)
     start_time = models.DateTimeField(verbose_name=_('Start Time'), auto_now_add=True)
     End_time = models.DateTimeField(verbose_name=_('End Time'), blank=True, null=True)
 
